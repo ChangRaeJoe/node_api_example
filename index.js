@@ -1,8 +1,6 @@
-
-
 const express = require('express')
 const app = express()
-const port = 3000
+
 var bodyParser = require('body-parser')
 const logger= require('morgan')
 
@@ -13,8 +11,18 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(logger('dev'))
 
-app.get('/', (req, res) => {
-    res.send('Hello World!'+req.query)
+let users = [
+    {
+        id: 1,
+        name: "Alpha"
+    },
+    {
+        id: 2,
+        name: "Beta"
+    }
+]
+app.get('/users', (req, res) => {
+    res.json(users)
 })
 
 app.post('/', (req, res) => {
@@ -32,4 +40,4 @@ app.use((err, req, res, next)=>{
     res.render('error', { error: err });
 })
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+module.exports = app;

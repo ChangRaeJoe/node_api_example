@@ -5,9 +5,8 @@ API server example code.  Code development using variety Module.
 - Refactoring
 
 # Used Module
-- Express.js
-- body-parser
-- 
+- Express.js, body-parser
+- mocha, should, superTest
 
 # Setup
 1. git clone
