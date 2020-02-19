@@ -1,6 +1,6 @@
 const should = require('should');
 const request = require('supertest')
-const app = require('./index')
+const app = require('../../index')
 
 describe('GET /users', ()=>{
     describe('성공', ()=>{
@@ -71,7 +71,7 @@ describe('DELETE /users/:id', ()=>{
     describe('성공', ()=>{
         it('204로 응답한다.', done=>{
             request(app)
-                .delete('/users/1')
+                .delete('/users/5')
                 .expect(204)
                 .end(done)
         })
