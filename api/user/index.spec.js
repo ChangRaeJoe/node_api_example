@@ -1,8 +1,24 @@
 const should = require('should');
 const request = require('supertest')
 const app = require('../../index')
+const models = require('../../models')
 
 describe('GET /users', ()=>{
+    before(async function() {
+        // excuted before test suite
+        await models.sequelize.sync({force:true})
+        console.log('DB Syncro')
+        models.User.bulkCreate([
+            { name: 'Alpha' },
+            { name: 'Beta' },
+            { name: 'Hel'}
+        ]).then(() => {
+            return models.User.findAll();
+        }).then(user => {
+            // console.log(user)
+        })
+    });
+    
     describe('성공', ()=>{
         it('배열을 반환한다', (done)=>{
             // assert.equal(1,1)
@@ -71,7 +87,7 @@ describe('DELETE /users/:id', ()=>{
     describe('성공', ()=>{
         it('204로 응답한다.', done=>{
             request(app)
-                .delete('/users/5')
+                .delete('/users/1')
                 .expect(204)
                 .end(done)
         })
@@ -98,7 +114,7 @@ describe('POST /users', () => {
         it('201코드를 반환한다.', done => {
             request(app)
                 .post('/users')
-                .send({name: 'Zeta'})
+                .send({name: 'Zero'})
                 .expect(201)
                 .end(done)
         })

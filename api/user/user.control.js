@@ -1,65 +1,58 @@
+const models = require('../../models')
 
-let users = [
-    {
-        id: 1,
-        name: "Alpha"
-    },
-    {
-        id: 2,
-        name: "Beta"
-    },
-    {
-        id: 5,
-        name: "Hel"
-    }
-]
-
-const showList = (req, res, next) => {
+const showList = async (req, res, next) => {
     req.query.limit = req.query.limit || 10
     const limitNum = parseInt(req.query.limit);
     if(!limitNum) {
-        res.statusCode = 400
-        return res.send()
-    
+        return res.status(400).send()
     }
-     
-    res.json(users.slice(0, limitNum))
+    else {
+        const users = await models.User.findAll({ offset: 0, limit: limitNum })
+        return res.json(users)
+    }
 }
 
-const showOne = (req, res, next)=>{
+const showOne = async (req, res, next)=>{
     const id = parseInt(req.params.id)
 
     if (!id) {
         res.statusCode = 400
         return res.send()
     }
-    const filtered = users.filter((user)=>{
-        if (id === user.id) return true
-    })[0]
+    const user = await models.User.findOne({
+        where: {
+            id: id
+        }
+    })
 
-    if (!filtered) {
+    if(!user) {
         return res.status(404).end()
     }
-
-    res.json(filtered)
+    res.json(user)
 }
 
-const remove = (req, res, next)=>{
+const remove = async(req, res, next)=>{
     const id = parseInt(req.params.id)
 
     if (!id) {
         return res.status(400).end()
     }
 
-    const deleted = users.filter(user => {
-        return id !== user.id
-    })
-
-    if (deleted.length === users.length) {
+    const finded = await models.User.findOne({
+        where: {
+            id: id
+        }
+    });
+    if(finded === null) {
         return res.status(404).end()
+    } else {
+        await models.User.destroy({
+            where: {
+                id: id
+            }
+        });
+        return res.status(204).end()
     }
-    users = deleted
-    res.status(204).end()
 }
 
 const add = (req, res, next) => {
@@ -69,20 +62,20 @@ const add = (req, res, next) => {
         return res.status(400).end()
     }
 
-    const overlap = users.filter(user => {
-        return user.name === name
+    models.User.findOrCreate({
+        where: { name: name },
+        defaults: {
+          name: name
+        }
     })
-    if (overlap.length > 0) {
-        return res.status(409).end()
-    }
+    .spread((memo, created) => {
+        if (created) {
+            return res.status(201).json(memo.dataValues)
+        } else {
+            return res.status(409).end()
+        }
+    });
 
-    const tmpUser = {
-        id: Date.now(),
-        name: name
-    }
-
-    users.push(tmpUser)
-    res.status(201).json(tmpUser)
 }
 
 const modify = (req, res, next) => {
@@ -92,14 +85,16 @@ const modify = (req, res, next) => {
         return res.status(400).end()
     }
 
-    const searched = users.filter(user => {
-        return user.id === id
-    })
-
-    if(searched.length == 0) {
-        return res.status(404).end()
-    }
-    res.status(200).json({id, name})
+    models.User.update(
+        {name: name}, 
+        {where: {id: id}}
+        ).then(result => {
+                if (result[0] == 0) {
+                    return res.status(404).end()
+                } else {
+                    return res.status(200).json({id, name})
+                }
+            })
 }
 
 module.exports = {
